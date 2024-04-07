@@ -18,7 +18,7 @@ type Config struct {
 
 // RunCommand takes an aws command and runs it then returns the output
 func RunCommand(cfg Config, command string) (string, error) {
-	formatedCommand := formatAWSCommand(command)
+	formatedCommand := formatAWSCommand(command, cfg.Profile, cfg.Region)
 	log.Println("Running command: ", formatedCommand)
 	cmd := exec.Command("sh", "-c", formatedCommand)
 	output, err := cmd.CombinedOutput()
@@ -28,6 +28,6 @@ func RunCommand(cfg Config, command string) (string, error) {
 	return string(output), nil
 }
 
-func formatAWSCommand(command string) string {
-	return fmt.Sprintf(command)
+func formatAWSCommand(command string, awsProfile string, awsRegion string) string {
+	return fmt.Sprintf("%s --profile %s --region %s", command, awsProfile, awsRegion)
 }

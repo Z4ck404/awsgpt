@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -8,13 +10,13 @@ import (
 	openaiclient "awsgpt/internal/openai"
 
 	"github.com/spf13/cobra"
-
-	"github.com/sashabaranov/go-openai"
 )
+
+var verbose bool
 
 // openaiConfig is the configuration for the openai client
 var openaiConfig = &openaiclient.Config{
-	Model: openai.GPT3Dot5Turbo,
+	Model: openaiclient.DEFAULT_OPEN_AI_MODEL,
 }
 
 // awsConfig is the configuration for the aws CLI
@@ -25,13 +27,13 @@ var awsConfig = &aws.Config{
 
 var rootCmd = &cobra.Command{
 	Use:   "awsgpt",
-	Short: "Talk with your AWS account using gpt",
+	Short: "[AWSGPT] Talk with your AWS account using gpt",
 	Long: `
 		awsgpt is a go CLI library that allows you to 
 		talk with your AWS account using gpt-3.`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Execute()
+		fmt.Println(cmd.Root().Short)
 	},
 }
 
@@ -39,15 +41,20 @@ func init() {
 	// Initialize the config
 	cobra.OnInitialize(initConfig)
 
-	// Add the flags to the root command
+	// Add the aws flags to the root command
 	rootCmd.PersistentFlags().StringVar(&awsConfig.Profile, "aws-profile", "", "your aws profile (default is Default)")
-	rootCmd.PersistentFlags().StringVar(&awsConfig.Profile, "aws-region", "", "the default aws region for aws CLI if not set in the aws profile (default is us-east-1)")
-	rootCmd.PersistentFlags().StringVar(&openaiConfig.Token, "token", "", "the openai token to use (default is the environment variable OPENAI_API_TOKEN)")
-	// Add the message flag to the root command
-	rootCmd.PersistentFlags().StringP("message", "a", "YOUR NAME", "Author name for copyright attribution")
+	rootCmd.PersistentFlags().StringVar(&awsConfig.Region, "aws-region", "", "the default aws region for aws CLI if not set in the aws profile (default is us-east-1)")
 
-	//TODO Enable verbose logging
-	//rootCmd.PersistentFlags().BoolP("verbose", "v", false, "enable verbose logging")
+	// Add the token and Model flags to the root command
+	rootCmd.PersistentFlags().StringVar(&openaiConfig.Token, "token", "", "the openai token to use (default is the environment variable OPENAI_API_TOKEN)")
+	rootCmd.PersistentFlags().StringVar(&openaiConfig.Model, "model", "", "the openai model to use (default is gpt-3.5-turbo model)")
+
+	// Add the input message flag to the root command
+	rootCmd.PersistentFlags().StringP("question", "", "Your question", "The question you want to ask the AI model about your AWS account.")
+
+	//Enable verbose logging
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
+
 }
 
 func Execute() {
@@ -55,8 +62,16 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+
+	// Enable verbose logging if the verbose flag is set
+	if verbose {
+		log.SetOutput(os.Stdout)
+	} else {
+		log.SetOutput(io.Discard)
+	}
+
 	// Get the messages from the flags
-	userQuestion := rootCmd.Flag("message").Value.String()
+	userQuestion := rootCmd.Flag("question").Value.String()
 	userQuestionMessages := []string{userQuestion}
 
 	// Get the AI response
@@ -66,7 +81,7 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	log.Printf("AI Response: %s\n", aiResponse)
+	log.Printf("[AWS CLI] AI Response: %s\n", aiResponse)
 	// Run the command
 	awsCommand := aiResponse
 	awsOutput, err := aws.RunCommand(*awsConfig, awsCommand)
@@ -76,8 +91,8 @@ func Execute() {
 	}
 
 	// Print the output
-	log.Printf("AWS Command: %s\n", awsCommand)
-	log.Printf("AWS Output: %s\n", awsOutput)
+	//log.Printf("AWS Command: %s\n", awsCommand)
+	log.Printf("[AWS CLI OUTPUT] AWS Output: %s\n", awsOutput)
 
 	// Explain the output with AI
 	awsCommandOutputMessage := []string{awsOutput}
@@ -87,7 +102,9 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	log.Printf("%s\n", aiExplainCommand)
+	log.Printf(" [AWS CLI EXPLAINED] %s\n", aiExplainCommand)
+
+	fmt.Println(aiExplainCommand)
 }
 
 func initConfig() {
@@ -108,8 +125,30 @@ func initConfig() {
 	// Initialize the openai client
 	openaiConfig.Client = openaiclient.NewClient(openaiConfig.Token)
 
+	// Get the openai model from the --model flag if set
+	model := rootCmd.Flag("model").Value.String()
+	if model != "" {
+		openaiConfig.Model = model
+	}
+
 	// Initialize the aws config
-	awsConfig.Profile = rootCmd.Flag("aws-profile").Value.String()
-	awsConfig.Region = rootCmd.Flag("aws-region").Value.String()
+	if rootCmd.Flag("aws-profile").Value.String() == "" {
+		awsConfig.Profile = aws.DEFAULT_AWS_PROFILE
+	} else {
+		awsConfig.Profile = rootCmd.Flag("aws-profile").Value.String()
+	}
+
+	if rootCmd.Flag("aws-region").Value.String() == "" {
+		awsConfig.Region = aws.DEFAULT_AWS_REGION
+	} else {
+		awsConfig.Region = rootCmd.Flag("aws-region").Value.String()
+	}
+
+	// validate the user question
+	userQuestion := rootCmd.Flag("question").Value.String()
+	if userQuestion == "" {
+		fmt.Errorf("Please provide a message to ask the AI mode: %s")
+		os.Exit(1)
+	}
 
 }

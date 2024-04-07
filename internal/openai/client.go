@@ -31,6 +31,9 @@ func GetAIResponse(cfg Config, masterPrompt string, messages []string) (string, 
 	}
 
 	gptResponse, err := cfg.Client.CreateChatCompletion(context.Background(), req)
+	if err != nil {
+		return aiResponse, err
+	}
 	aiResponse = gptResponse.Choices[0].Message.Content
 	return aiResponse, err
 }
