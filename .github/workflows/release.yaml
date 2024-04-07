@@ -3,6 +3,8 @@ on:
   release:
     types: [created]
 
+permissions: write-all
+
 jobs:
   release:
     name: Release cross-platform builds
