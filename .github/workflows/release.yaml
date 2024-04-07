@@ -38,4 +38,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: "./bin/awsgpt_*"
+          args: "./bin/awsgpt_*"          
+          RELEASE_ID: ${{ env.RELEASE_ID }}
