@@ -21,3 +21,6 @@
 go.work
 
 bin/
+
+# Mac stuff
+.DS_Store
