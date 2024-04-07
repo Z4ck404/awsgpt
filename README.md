@@ -1,4 +1,4 @@
-# awsgpt
+# [WIP] awsgpt
 
 Talk with AWS infrastructure using natural language.
 
