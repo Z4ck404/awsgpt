@@ -1,6 +1,7 @@
 # [WIP] awsgpt
 
-Talk with AWS infrastructure using natural language.
+<img width="1089" alt="Capture d’écran 2024-04-07 à 06 15 15" src="https://github.com/Z4ck404/awsgpt/assets/35115877/40322d5b-bb64-46fa-933d-9bed1e5d9866">
+
 
 ## What
 
