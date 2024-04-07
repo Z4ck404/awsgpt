@@ -14,7 +14,7 @@ func NewClient(token string) *openai.Client {
 func GetAIResponse(cfg Config, masterPrompt string, messages []string) (string, error) {
 	aiResponse := ""
 	req := openai.ChatCompletionRequest{
-		Model: cfg.Model,
+		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,

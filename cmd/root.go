@@ -15,9 +15,7 @@ import (
 var verbose bool
 
 // openaiConfig is the configuration for the openai client
-var openaiConfig = &openaiclient.Config{
-	Model: openaiclient.DEFAULT_OPEN_AI_MODEL,
-}
+var openaiConfig = &openaiclient.Config{}
 
 // awsConfig is the configuration for the aws CLI
 var awsConfig = &aws.Config{
@@ -47,7 +45,7 @@ func init() {
 
 	// Add the token and Model flags to the root command
 	rootCmd.PersistentFlags().StringVar(&openaiConfig.Token, "token", "", "the openai token to use (default is the environment variable OPENAI_API_TOKEN)")
-	rootCmd.PersistentFlags().StringVar(&openaiConfig.Model, "model", "", "the openai model to use (default is gpt-3.5-turbo model)")
+	//rootCmd.PersistentFlags().StringVar(&openaiConfig.Model, "model", "", "the openai model to use (default is gpt-3.5-turbo model)")
 
 	// Add the input message flag to the root command
 	rootCmd.PersistentFlags().StringP("question", "", "Your question", "The question you want to ask the AI model about your AWS account.")
@@ -124,12 +122,6 @@ func initConfig() {
 
 	// Initialize the openai client
 	openaiConfig.Client = openaiclient.NewClient(openaiConfig.Token)
-
-	// Get the openai model from the --model flag if set
-	model := rootCmd.Flag("model").Value.String()
-	if model != "" {
-		openaiConfig.Model = model
-	}
 
 	// Initialize the aws config
 	if rootCmd.Flag("aws-profile").Value.String() == "" {

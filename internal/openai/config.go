@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	Token  string
-	Model  string
+	Token string
+	//Model  string
 	Client *openai.Client
 }
 
@@ -14,7 +14,7 @@ const (
 	OPENAI_API_TOKEN_VAR_NAME string = "OPENAI_API_TOKEN"
 
 	// DEFAULT_OPEN_AI_MODEL is the default model to use for the openai client
-	DEFAULT_OPEN_AI_MODEL string = openai.GPT3Dot5Turbo
+	//DEFAULT_OPEN_AI_MODEL string = openai.GPT3Dot5Turbo
 
 	// MasterPrompt is the prompt that the user will see when they start the conversation
 	COMMAND_MASTER_PROMPT string = `
